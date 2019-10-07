@@ -9,10 +9,10 @@ class App extends Component {
     this.importFiles = this.importFiles.bind(this);
     this.exportFiles = this.exportFiles.bind(this);
     this.showImage = this.showImage.bind(this);
-    this.lastFileName = "";
     this.state = {
       imagesrc: ""
     };
+    this.lastFileNameKey = "lastFileName";
   }
 
   importFiles(e) {
@@ -52,8 +52,8 @@ class App extends Component {
       // var b64string = btoa(buffer)
       // // let b64string = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
-      App.lastFileName = file.name
-      localStorage.setItem(App.lastFileName, base64String);
+      localStorage.setItem("lastFileName", file.name);
+      localStorage.setItem(localStorage.getItem(App.lastFileNameKey), base64String);
     })
     .catch((e) => {
       console.log(e)
@@ -85,7 +85,7 @@ class App extends Component {
     // console.log(imagefile);
     // console.log(testFile);
 
-    const b64string = localStorage.getItem(App.lastFileName);
+    const b64string = localStorage.getItem(localStorage.getItem(App.lastFileNameKey));
     console.log(b64string)
     const imageSrc = "data:image/jpeg;base64," + b64string
     this.setState({ imagesrc: imageSrc });
