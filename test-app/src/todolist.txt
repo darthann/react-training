@@ -1,0 +1,12 @@
+1. Import zip containg one image
+2. Put it in local storage
+3. Extract file and store it in local storage
+4. Show image in page
+5. Do same steps with multiple images
+
+
+OTHERS :
+Loading during promess handling
+
+
+!!! ArrayBuffer to String then String to ArrayBuffer to File to Image
