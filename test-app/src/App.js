@@ -11,8 +11,8 @@ class App extends Component {
     this.showImage = this.showImage.bind(this);
     this.lastFileName = "";
     this.state = {
-      file: null
-    }
+      imagesrc: ""
+    };
   }
 
   importFiles(e) {
@@ -26,7 +26,30 @@ class App extends Component {
     console.log(file);
     // Add to local storage, make a button to export from local storage (image)
     // promess UnzipFile(e.target.files.byteArray)
-    file.text().then(text => {localStorage.setItem(file.name, text); console.log("Promess is done !"); this.lastFileName = file.name}).catch((e) => console.log(e));
+    file.arrayBuffer()
+    .then(buffer => {
+      console.log("Array buffer promise is done !");
+
+      let typed_array = new Uint8Array(buffer);
+      const st = String.fromCharCode.apply(null, typed_array);
+      const base64String = btoa(st);
+
+      // {`data:image/jpeg;base64,${data}`}
+
+      // this.imageurl = this.domSanitizer.bypassSecurityTrustUrl(‘data:image/jpg;base64, ‘ + base64String);
+
+      // if out of range const STRING_CHAR = TYPED_ARRAY.reduce((data, byte)=> {return data + String.fromCharCode(byte);}, ''));
+
+
+      // var b64string = btoa(buffer)
+      // // let b64string = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+
+      App.lastFileName = file.name
+      localStorage.setItem(App.lastFileName, base64String);
+    })
+    .catch((e) => {
+      console.log(e)
+    });
     // FileManagerService('ImageID');
   }
 
@@ -37,13 +60,27 @@ class App extends Component {
   showImage(e) {
     console.log("Showing image");
     // image as file text to file.
-    var imageFileAsText = localStorage.getItem(this.lastFileName);
-    var imageFile = new File([imageFileAsText], "test.jpg", {
-      type: "image/jpeg",
-    });
-    this.setState({
-      file: URL.createObjectURL(imageFile)
-    })
+    // var imageFileAsText = localStorage.getItem(this.lastFileName);
+    // var imageFile = new File([imageFileAsText], "test.jpg", {
+    //   type: "image/jpeg",
+    // });
+    // this.setState({
+    //   file: URL.createObjectURL(imageFile)
+    // })
+
+    // let arrayBuffer = atob(localStorage.getItem(App.lastFileName));
+
+    // let imagefile = new File([arrayBuffer], "test.jpg", { type: "image/jpeg", });
+
+    // let testFile = new File([arrayBuffer], "RandomName.jpg");
+
+    // console.log(imagefile);
+    // console.log(testFile);
+
+    const b64string = localStorage.getItem(App.lastFileName);
+    console.log(b64string)
+    const imageSrc = "data:image/jpeg;base64," + b64string
+    this.setState({ imagesrc: imageSrc });
   }
 
   render() { 
@@ -56,7 +93,7 @@ class App extends Component {
         <div className="ImportButtonContainer">
           <Button onClick={this.showImage} color="primary" size="lg">SHOW IMAGE</Button>
         </div>
-        <img src={this.state.file}/>
+        <img alt="" src={this.state.imagesrc}/>
       </div>
     );
   }
