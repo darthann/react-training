@@ -31,7 +31,15 @@ class App extends Component {
       console.log("Array buffer promise is done !");
 
       let typed_array = new Uint8Array(buffer);
-      const st = String.fromCharCode.apply(null, typed_array);
+      // const st = String.fromCharCode.apply(null, typed_array);
+      let st = ""
+      try {
+        st = String.fromCharCode.apply(null, typed_array);
+        
+      } catch {
+        st = typed_array.reduce((data, byte) => { return data + String.fromCharCode(byte)}, '');
+      }
+
       const base64String = btoa(st);
 
       // {`data:image/jpeg;base64,${data}`}
