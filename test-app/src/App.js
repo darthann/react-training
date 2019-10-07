@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import './App.css';
 import { Button } from 'reactstrap';
+import JSZip from 'jszip';
 
 class App extends Component {
   constructor(props) {
@@ -89,6 +90,11 @@ class App extends Component {
     console.log(b64string)
     const imageSrc = "data:image/jpeg;base64," + b64string
     this.setState({ imagesrc: imageSrc });
+  }
+
+  extractZip() {
+    var zip = new JSZip()
+    
   }
 
   render() { 
