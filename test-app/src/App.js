@@ -14,6 +14,7 @@ class App extends Component {
       imagesrc: ""
     };
     this.lastFileNameKey = "lastFileName";
+    this.lastZipTypeKey = "lastZipType"
   }
 
   importFiles(e) {
@@ -27,6 +28,72 @@ class App extends Component {
     console.log(file);
     // Add to local storage, make a button to export from local storage (image)
     // promess UnzipFile(e.target.files.byteArray)
+    
+    if (file.type === "image/jpeg") {
+      console.log("Image uploading...")
+      file.arrayBuffer()
+      .then(buffer => {
+      console.log("Array buffer promise is done !");
+
+      let typed_array = new Uint8Array(buffer);
+      let st = ""
+      try {
+        st = String.fromCharCode.apply(null, typed_array);
+        
+      } catch {
+        st = typed_array.reduce((data, byte) => { return data + String.fromCharCode(byte)}, '');
+      }
+
+      const base64String = btoa(st);
+
+      // {`data:image/jpeg;base64,${data}`}
+
+      // this.imageurl = this.domSanitizer.bypassSecurityTrustUrl(‘data:image/jpg;base64, ‘ + base64String);
+
+      // if out of range const STRING_CHAR = TYPED_ARRAY.reduce((data, byte)=> {return data + String.fromCharCode(byte);}, ''));
+
+
+      // var b64string = btoa(buffer)
+      // // let b64string = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+
+      localStorage.setItem("lastFileName", file.name);
+      localStorage.setItem(localStorage.getItem(App.lastFileNameKey), base64String);
+      })
+      .catch((e) => {
+        console.log(e)
+      });
+    }
+
+    if (file.type.includes("zip")) {
+      console.log("Zip uploading...");
+      localStorage.setItem(App.lastFileNameKey, file.name);
+      localStorage.setItem(App.lastZipTypeKey, file.type);
+      file.arrayBuffer()
+      .then(buffer => {
+      console.log("Array buffer promise is done !");
+      let typed_array = new Uint8Array(buffer);
+      let st = ""
+      try {
+        st = String.fromCharCode.apply(null, typed_array);
+        
+      } catch {
+        st = typed_array.reduce((data, byte) => { return data + String.fromCharCode(byte)}, '');
+      }
+      const base64String = btoa(st);
+
+      // localStorage.setItem("lastFileName", file.name);
+      // localStorage.setItem(localStorage.getItem(App.lastFileNameKey), base64String);
+
+      var zip = new JSZip();
+      zip.loadAsync(base64String, {base64: true}).then(zip => {
+        console.log(zip); 
+      });
+      })
+      .catch((e) => {
+        console.log(e)
+      });
+    }
+    
     file.arrayBuffer()
     .then(buffer => {
       console.log("Array buffer promise is done !");
@@ -90,11 +157,6 @@ class App extends Component {
     console.log(b64string)
     const imageSrc = "data:image/jpeg;base64," + b64string
     this.setState({ imagesrc: imageSrc });
-  }
-
-  extractZip() {
-    var zip = new JSZip()
-    
   }
 
   render() { 
