@@ -36,118 +36,53 @@ class App extends Component {
   }
 
   importFiles(e) {
-    // localStorage.setItem('myValue', Math.random());
-    // console.log(localStorage.getItem('myValue'));
     this.fileUpload.current.click();
   }
 
   onFilesAdded(e) {
     var file = e.target.files[0];
     console.log(file);
-    // Add to local storage, make a button to export from local storage (image)
-    // promess UnzipFile(e.target.files.byteArray)
     
-    if (file.type === "image/jpeg") {
-      console.log("Image uploading...")
-      file.arrayBuffer()
-      .then(buffer => {
-      console.log("Array buffer promise is done !");
-
-      let typed_array = new Uint8Array(buffer);
-      let st = ""
-      try {
-        st = String.fromCharCode.apply(null, typed_array);
-        
-      } catch {
-        st = typed_array.reduce((data, byte) => { return data + String.fromCharCode(byte)}, '');
-      }
-
-      const base64String = btoa(st);
-
-      // {`data:image/jpeg;base64,${data}`}
-
-      // this.imageurl = this.domSanitizer.bypassSecurityTrustUrl(‘data:image/jpg;base64, ‘ + base64String);
-
-      // if out of range const STRING_CHAR = TYPED_ARRAY.reduce((data, byte)=> {return data + String.fromCharCode(byte);}, ''));
-
-
-      // var b64string = btoa(buffer)
-      // // let b64string = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-
-      localStorage.setItem("lastFileName", file.name);
-      localStorage.setItem(localStorage.getItem(App.lastFileNameKey), base64String);
-      })
-      .catch((e) => {
-        console.log(e)
-      });
-    }
-
     if (file.type.includes("zip")) {
       console.log("Zip uploading...");
       localStorage.setItem(App.lastFileNameKey, file.name);
       localStorage.setItem(App.lastZipTypeKey, file.type);
-      file.arrayBuffer()
-      .then(buffer => {
-      console.log("Array buffer promise is done !");
-      let typed_array = new Uint8Array(buffer);
-      let st = ""
-      try {
-        st = String.fromCharCode.apply(null, typed_array);
-        
-      } catch {
-        st = typed_array.reduce((data, byte) => { return data + String.fromCharCode(byte)}, '');
-      }
-      const base64String = btoa(st);
-
-      // localStorage.setItem("lastFileName", file.name);
-      // localStorage.setItem(localStorage.getItem(App.lastFileNameKey), base64String);
 
       var zip = new JSZip();
-      zip.loadAsync(base64String, {base64: true}).then(zip => {
-        console.log(zip);
-        useIndexedDB('people').add({ name: 'test', email: zip.files })
-        .then(() => {console.log("Added")})
-        .catch((e) => {console.log(e)});
-      });
+      zip.loadAsync(file).then(zip => {
+        console.log("Zip from blob file :", zip);
+        let directories = Object.keys(zip.files);
+        let profondeur = 0;
+        let testtable = [];
+        for (let i = 0; i < directories.length; i++) {
+          console.log(directories[i]);
+          let temp = directories[i].split("/").length;
+          testtable.push({profondeur: temp, nom: directories[i]});
+          if (temp > profondeur) {
+            profondeur = temp;
+          }
+        }
+        console.log("La profondeur max :", profondeur)
+        testtable.sort((a, b) => (a.profondeur > b.profondeur) ? 1 : ((b.profondeur > a.profondeur) ? -1 : 0));
+        console.log(testtable);
+        for (let i; i < profondeur; i++) {
+          
+        }
       })
       .catch((e) => {
         console.log(e)
       });
     }
-    
-    file.arrayBuffer()
-    .then(buffer => {
-      console.log("Array buffer promise is done !");
+  }
 
-      let typed_array = new Uint8Array(buffer);
-      // const st = String.fromCharCode.apply(null, typed_array);
-      let st = ""
-      try {
-        st = String.fromCharCode.apply(null, typed_array);
-        
-      } catch {
-        st = typed_array.reduce((data, byte) => { return data + String.fromCharCode(byte)}, '');
-      }
-
-      const base64String = btoa(st);
-
-      // {`data:image/jpeg;base64,${data}`}
-
-      // this.imageurl = this.domSanitizer.bypassSecurityTrustUrl(‘data:image/jpg;base64, ‘ + base64String);
-
-      // if out of range const STRING_CHAR = TYPED_ARRAY.reduce((data, byte)=> {return data + String.fromCharCode(byte);}, ''));
-
-
-      // var b64string = btoa(buffer)
-      // // let b64string = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-
-      localStorage.setItem("lastFileName", file.name);
-      localStorage.setItem(localStorage.getItem(App.lastFileNameKey), base64String);
-    })
-    .catch((e) => {
-      console.log(e)
+  decodeFile(file) {
+    return new Promise((resolve, reject) => { 
+        file.async("string").then(function (data) {
+            resolve(data)
+        }).catch((e) => {
+            console.log(e)
+            reject(e)});     
     });
-    // FileManagerService('ImageID');
   }
 
   exportFiles(e) {
@@ -155,34 +90,15 @@ class App extends Component {
   }
 
   showImage(e) {
-    // console.log("Showing image");
-    // // image as file text to file.
-    // // var imageFileAsText = localStorage.getItem(this.lastFileName);
-    // // var imageFile = new File([imageFileAsText], "test.jpg", {
-    // //   type: "image/jpeg",
-    // // });
-    // // this.setState({
-    // //   file: URL.createObjectURL(imageFile)
-    // // })
+    console.log("Showing image");
+    const b64string = localStorage.getItem(localStorage.getItem(App.lastFileNameKey));
+    console.log(b64string)
+    const imageSrc = "data:image/jpeg;base64," + b64string
+    this.setState({ imagesrc: imageSrc });
 
-    // // let arrayBuffer = atob(localStorage.getItem(App.lastFileName));
-
-    // // let imagefile = new File([arrayBuffer], "test.jpg", { type: "image/jpeg", });
-
-    // // let testFile = new File([arrayBuffer], "RandomName.jpg");
-
-    // // console.log(imagefile);
-    // // console.log(testFile);
-
-    // const b64string = localStorage.getItem(localStorage.getItem(App.lastFileNameKey));
-    // console.log(b64string)
-    // const imageSrc = "data:image/jpeg;base64," + b64string
-    // this.setState({ imagesrc: imageSrc });
-
-    // useIndexedDB('people').add({ name: 'name', email: 'email' })
-    // .then(() => {console.log("Added")})
-    // .catch((e) => {console.log(e)});
-
+    useIndexedDB('people').add({ name: 'name', email: 'email' })
+    .then(() => {console.log("Added")})
+    .catch((e) => {console.log(e)});
   }
 
   render() { 
