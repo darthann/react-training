@@ -39,23 +39,21 @@ class App extends Component {
     this.fileUpload.current.click();
   }
 
-  onFilesAdded(e) {
+  async onFilesAdded(e) {
     var file = e.target.files[0];
     console.log(file);
     
-    if (file.type.includes("zip")) {
-      console.log("Zip uploading...");
+    if (file.type.includes("nonononon")) {
       localStorage.setItem(App.lastFileNameKey, file.name);
       localStorage.setItem(App.lastZipTypeKey, file.type);
 
       var zip = new JSZip();
       zip.loadAsync(file).then(zip => {
-        console.log("Zip from blob file :", zip);
+        // console.log("Zip from blob file :", zip);
         let directories = Object.keys(zip.files);
         let profondeur = 0;
         let testtable = [];
         for (let i = 0; i < directories.length; i++) {
-          console.log(directories[i]);
           let temp = directories[i].split("/").length;
           testtable.push({profondeur: temp, nom: directories[i]});
           if (temp > profondeur) {
@@ -65,13 +63,68 @@ class App extends Component {
         console.log("La profondeur max :", profondeur)
         testtable.sort((a, b) => (a.profondeur > b.profondeur) ? 1 : ((b.profondeur > a.profondeur) ? -1 : 0));
         console.log(testtable);
-        for (let i; i < profondeur; i++) {
-          
+        let json = {"name": "projet", "toggled": false, "children": []}
+        for (let pro = 0; pro <= profondeur; pro++) {
+          for (let i = 0; i < testtable.length; i++) {
+            // test profondeur max 3
+            // 1 Mettre tout les dossiers dans le json
+            // 2 Ajouter les fichiers aux bons endroits avec leur nom
+            if (testtable[i]["profondeur"] === pro) {
+              // Ajouter au json selon l'architecture (quand vide master quand remplit vide)
+              const temp = testtable[i]["nom"].split("/");
+              // Dossier
+              if (temp[temp.length - 1] === "") {
+                // Trouver l'endroit ou push le dossier
+                json["children"].push({"name": temp[temp.length - 2], "toggled": false, "folder": true, "children": []})
+              }
+            }
+          }
+          console.log(json);
         }
       })
       .catch((e) => {
         console.log(e)
       });
+    }
+
+    if (file.type.includes("zip")) {      
+      async function decompress(file) {
+        return new Promise((resolve, reject) => {
+          var zip = new JSZip();
+          zip.loadAsync(file).then(zip => {
+            resolve(zip);
+          });
+        });
+      }
+
+      async function readOnly(file) {
+        return new Promise((resolve, reject) => {
+          let fileReader = new FileReader();
+          fileReader.onload = function(fileLoadedEvent)
+          {
+            resolve(fileLoadedEvent.target.result);
+          };
+          fileReader.readAsText(file);
+        });
+      }
+
+      let zipobject = await decompress(file);
+
+      console.log(zipobject);
+
+      let myFile = zipobject.files["compile_my_code.sh"];
+
+      console.log(zipobject.files["compile_my_code.sh"]);
+
+      let text = await zipobject.files["compile_my_code.sh"].async("string");
+      console.log("Content of file", text);
+
+      zipobject.file("compile_my_code.sh", "Et merce la famille !");
+
+      let text2 = await zipobject.files["compile_my_code.sh"].async("string");
+      console.log("Content of file", text2);
+
+      console.log(zipobject.files["compile_my_code.sh"]);
     }
   }
 
@@ -105,13 +158,13 @@ class App extends Component {
     return (
       <div>
         <div className="ImportButtonContainer">
-          <Button onClick={this.importFiles} color="primary" size="lg">IMPORT ZIP</Button>
+          <Button onClick={this.importFiles} color="primary" size="lg">IMPORT</Button>
         </div>
         <input ref={this.fileUpload} className="FileInput" type="file" onChange={this.onFilesAdded}/>
-        <div className="ImportButtonContainer">
+        {/* <div className="ImportButtonContainer">
           <Button onClick={this.showImage} color="primary" size="lg">SHOW IMAGE</Button>
         </div>
-        <img alt="" src={this.state.imagesrc}/>
+        <img alt="" src={this.state.imagesrc}/> */}
       </div>
     );
   }
